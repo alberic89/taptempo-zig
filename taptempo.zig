@@ -25,6 +25,9 @@
 // Sur une idée de François Mazen
 // https://linuxfr.org/users/mzf/journaux/un-tap-tempo-en-ligne-de-commande
 //
+// Merci à Leon Henrik Plickat pour son exemple d'application zig "Uncooked"
+// https://zig.news/lhp/want-to-create-a-tui-application-the-basics-of-uncooked-terminal-io-17gm
+//
 
 const std = @import("std");
 const stdout = std.io.getStdOut().writer();
