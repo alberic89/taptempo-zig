@@ -15,7 +15,7 @@
 //! You should have received a copy of the GNU General Public License
 //! along with this program. If not, see <https://www.gnu.org/licenses/>. 
 //!
-//! Compilé avec succès avec zig 0.11.0-dev.4406+d370005d3 (2 août 2023)
+//! Compilé avec succès avec zig 0.11.0 (4 août 2023)
 //! Retouvez le code source à <https://github.com/alberic89/taptempo-zig>
 //
 // Pour compiler :
@@ -127,7 +127,7 @@ pub fn main() !void {
     try os.tcsetattr(tty.handle, .FLUSH, raw);
 
     try stdout.print(
-        "Bienvenue dans Taptempo !\nPour commencer, appuyez sur une touche.\n(q pour arrêter)\n",
+        "Bienvenue dans TapTempo !\nPour commencer, appuyez sur une touche.\n(q pour arrêter)\n",
         .{});
 
     while (true) {
