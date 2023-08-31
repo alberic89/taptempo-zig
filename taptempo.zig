@@ -35,11 +35,28 @@ const fs = std.fs;
 const os = std.os;
 const time = std.time;
 
+
 /// Cette fonction va capturer et calculer le tempo de la frappe au clavier.
-/// Peut retourner une erreur.
-pub fn captureTempo(tty: fs.File) !void {
-    // On enregistre 5 frappes
-    var tap: [5]?i64 = [5]?i64{null, null, null, null, null};
+/// Peut retourner une erreur, sinon retourne le tempo dans un u64
+pub fn captureTempo(tty: fs.File) !u64 {
+
+    // On prépare l'allocateur
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = &gpa.allocator();
+
+    // On récupère le deuxième argument de la ligne de commande,
+    // et on donne sa valeur à NB_FRAPPE_T si on le peut sinon 5
+    var args = std.process.args();
+    _ = args.next();
+    const NB_FRAPPE_T = std.fmt.parseInt(u8, args.next() orelse "5", 10) catch 5;
+
+    // On initialise une array de la taille NB_FRAPPE_T en s'assurant
+    // que la mémoire sera libérée
+    var tap: []i64 = try allocator.alloc(i64, NB_FRAPPE_T);
+    defer allocator.free(tap);
+
+    // On enregistre NB_FRAPPE_T frappes
+    var NB_FRAPPE: u8 = 0;
     try stdout.print("Capture du tempo", .{});
     for (tap, 0..) |_, index| {
         var buffer: [1]u8 = undefined;
@@ -52,39 +69,35 @@ pub fn captureTempo(tty: fs.File) !void {
             // de la milliseconde, mais peut être plus faible en fonction
             // du matériel et de l'OS
             tap[index] = time.milliTimestamp();
+            NB_FRAPPE += 1;
             try stdout.print(".", .{});
         }
     }
     try stdout.print(" Terminé.\n", .{});
-    var ecart: [4]?i64 = [4]?i64{null, null, null, null};
-    // On calcule l'écart entre les frappes, en prévoyant le cas où il
-    // n'y a pas eu 5 frappes
-    for (tap[1..], 0..) |ftime, index| {
-        if (ftime != null) {
-            ecart[index] = ftime.? - tap[index].?;
-        }
+
+    // Si il y a eu moins de 2 frappes réelles, on ne peut pas calculer le tempo
+    if (NB_FRAPPE < 2) {
+        try stdout.print("Pas assez de frappes.\n", .{});
+        return 0;
     }
-    var ecart_moy: ?f64 = null;
+
+    var ecart: []i64 = try allocator.alloc(i64, NB_FRAPPE - 1);
+    defer allocator.free(ecart);
+
+    // On calcule l'écart entre les frappes
+    for (1..NB_FRAPPE) |i| {
+        ecart[i - 1] = tap[i] - tap[i - 1];
+    }
+    var ecart_moy: f64 = 0;
     // On calcule l'écart moyen
-    for (ecart) |inter| {
-        if (inter != null) {
-            if (ecart_moy != null) {
-                var inter_f: f64 = @floatFromInt(inter.?);
-                ecart_moy = ( ecart_moy.? + inter_f ) / 2;
-            } else {
-                ecart_moy = @floatFromInt(inter.?);
-            }
-        }
+    for (ecart) |e| {
+        ecart_moy += @as(f64, @floatFromInt(e));
     }
-    // Si il y a eu moins de 2 frappes, on ne peut pas calculer le tempo
-    if (ecart_moy == null) {
-        try stdout.print("Tu n'as pas le rythme dans la peau !\n", .{});
-        return;
-    }
+    ecart_moy /= @as(f64, @floatFromInt(ecart.len));
     // Le tempo est donné avec un entier en battements par minute
-    var bpm: u64 = @intFromFloat((60 * time.ms_per_s) / ecart_moy.?);
+    var bpm: u64 = @intFromFloat((60 * time.ms_per_s) / ecart_moy);
     try stdout.print("Tempo : {} bpm\n", .{bpm});
-    return;
+    return bpm;
 }
 
 pub fn main() !void {
@@ -136,7 +149,7 @@ pub fn main() !void {
         if (buffer[0] == 'q') {
             break;
         } else {
-            try captureTempo(tty);
+            _ = try captureTempo(tty);
         }
     }
     try stdout.print("Au revoir !\n", .{});
