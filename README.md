@@ -12,6 +12,10 @@ Lancez avec :
 ```bash
 ./taptempo
 ```
+Vous pouvez spécifier le nombre de frappe avec :
+```bash
+./taptempo 5
+```
 
 Sur une idée de François Mazen
 https://linuxfr.org/users/mzf/journaux/un-tap-tempo-en-ligne-de-commande
