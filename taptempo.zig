@@ -22,6 +22,14 @@
 // ```bash
 // zig build-exe taptempo.zig
 // ```
+//
+// Usage :
+// ```bash
+// ./taptempo [nombre_de_frappe]
+// ```
+// 
+// Par défaut, le nombre de frappe est de 5
+// 
 // Sur une idée de François Mazen
 // https://linuxfr.org/users/mzf/journaux/un-tap-tempo-en-ligne-de-commande
 //
