@@ -14,7 +14,7 @@ Lancez avec :
 ```
 Vous pouvez spécifier le nombre de frappe avec :
 ```bash
-./taptempo 5
+./taptempo nombre_de_frappe
 ```
 
 Sur une idée de François Mazen
